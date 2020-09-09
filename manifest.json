@@ -1,0 +1,13 @@
+{
+	"aos-app-name": "aos_metering_app",
+	"version": "1.0",
+	"exe-name": "aos_metering_app",
+	"m2m": {
+		"app-name": "metersvc-smpl",
+		"app-id": "Nra1.com.aos.iot",
+		"ae-rn": "metersvc-smpl"
+	},
+	"files": [
+		"aos_metering_app"
+	]
+}
