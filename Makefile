@@ -18,7 +18,7 @@ $(EXE): $(OBJS)
 -include $(DEPS)
 
 clean:
-	rm -f $(EXE) $(OBJS) $(DEPS)
+	rm -f $(EXE) $(OBJS) $(DEPS) *.aos
 
 .PHONY: all clean
 

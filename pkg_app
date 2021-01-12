@@ -2,5 +2,5 @@
 
 . ./aos.sh
 
-make "$@"
+aospkg "$@"
 

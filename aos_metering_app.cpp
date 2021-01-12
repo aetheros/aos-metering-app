@@ -142,7 +142,7 @@ bool create_subscription()
     m2m::Request request = appEntity.newRequest(m2m::Operation::Create, m2m::To{"./metersvc/reads"});
     request.req->resultContent = m2m::ResultContent::Nothing;
     request.req->resourceType = m2m::ResourceType::subscription;
-    request.req->marshallPC(m2m::sn_subscription, subscription);
+    request.req->marshallPC(subscription);
 
     appEntity.sendRequest(request);
     auto response = appEntity.getResponse(request);
@@ -177,7 +177,7 @@ bool create_meter_read_policy()
     m2m::Request request = appEntity.newRequest(m2m::Operation::Create, m2m::To{"./metersvc/policies"});
     request.req->resultContent = m2m::ResultContent::Nothing;
     request.req->resourceType = m2m::ResourceType::contentInstance;
-    request.req->marshallPC(m2m::sn_contentInstance, policyInst);
+    request.req->marshallPC(policyInst);
 
     appEntity.sendRequest(request);
     auto response = appEntity.getResponse(request);
@@ -202,7 +202,7 @@ void notificationCallback(m2m::Notification notification)
         return;
     }
 
-    auto contentInstance = xs::fromAnyTypeElement<m2m::CdtContentInstance>(*notification.notificationEvent->representation, m2m::sn_contentInstance);
+    auto contentInstance = xs::fromAnyType<m2m::CdtContentInstance>(*notification.notificationEvent->representation);
     auto meterSvcData = xs::fromAnyTypeElement<aos::CdtMeterSvcData>(*contentInstance.content, aos::sn_meterSvcData);
 
     logInfo("timestamp: " << meterSvcData.readTimeLocal);
