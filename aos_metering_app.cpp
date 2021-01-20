@@ -11,6 +11,7 @@
 #include <aos/Names.hpp>
 #include <thread>
 #include <unistd.h>
+#include <fstream>
 
 using std::chrono::seconds;
 using std::chrono::minutes;
@@ -205,14 +206,18 @@ void notificationCallback(m2m::Notification notification)
     auto contentInstance = xs::fromAnyType<m2m::CdtContentInstance>(*notification.notificationEvent->representation);
     auto meterSvcData = xs::fromAnyTypeElement<aos::CdtMeterSvcData>(*contentInstance.content, aos::sn_meterSvcData);
 
+    std::ofstream output("meter_data.txt");
     logInfo("timestamp: " << meterSvcData.readTimeLocal);
+    output << "timestamp: " << meterSvcData.readTimeLocal << '\n';
     if (meterSvcData.powerQuality)
     {
         logInfo("powerQuality: " << *meterSvcData.powerQuality);
+        output << "powerQuality:\n" << *meterSvcData.powerQuality << '\n';
     }
     if (meterSvcData.summations)
     {
         logInfo("summations: " << *meterSvcData.summations);
+        output << "summations:\n" << *meterSvcData.summations << '\n';
     }
 }
 
