@@ -1,5 +1,5 @@
 {
-	"aos-app-name": "aos_metering_app",
+	"name": "aos_metering_app",
 	"version": "1.0",
 	"exe-name": "aos_metering_app",
 	"m2m": {
