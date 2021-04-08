@@ -2,13 +2,13 @@
 #include <aos/AppMain.hpp>
 #include <aos/Log.hpp>
 #include <m2m/AppEntity.hpp>
-#include <m2m/CdtSubscription.hpp>
-#include <m2m/CdtContentInstance.hpp>
+#include <xsd/m2m/CdtSubscription.hpp>
+#include <xsd/m2m/CdtContentInstance.hpp>
 #include <m2m/RequestPrimitive.hpp>
 #include <m2m/ResponsePrimitive.hpp>
-#include <m2m/Names.hpp>
-#include <aos/CdtMeterReadSchedulePolicy.hpp>
-#include <aos/Names.hpp>
+#include <xsd/m2m/Names.hpp>
+#include <xsd/aos/CdtMeterReadSchedulePolicy.hpp>
+#include <xsd/aos/Names.hpp>
 #include <thread>
 #include <unistd.h>
 #include <fstream>
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 
 bool create_subscription()
 {
-    m2m::CdtSubscription subscription = m2m::CdtSubscription::Create();
+    xsd::m2m::CdtSubscription subscription = xsd::m2m::CdtSubscription::Create();
 
     subscription.creator = std::string();
 
@@ -128,21 +128,21 @@ bool create_subscription()
     subscription.resourceName = "metersv-samp1-sub-01";
 
     // have all resource attributes be provided in the notifications
-    subscription.notificationContentType = m2m::NotificationContentType::all_attributes;
+    subscription.notificationContentType = xsd::m2m::NotificationContentType::all_attributes;
 
     // set the notification destination to be this AE.
-    subscription.notificationURI = m2m::CdtListOfURIs();
+    subscription.notificationURI = xsd::m2m::CdtListOfURIs();
     subscription.notificationURI->push_back(appEntity.getResourceId());
 
     // set eventNotificationCriteria to creation and deletion of child resources
-    m2m::CdtEventNotificationCriteria eventNotificationCriteria;
-    eventNotificationCriteria.notificationEventType.push_back(m2m::NotificationEventType::Create_of_Direct_Child_Resource);
-    //eventNotificationCriteria.notificationEventType.push_back(m2m::NotificationEventType::Delete_of_Direct_Child_Resource);
+    xsd::m2m::CdtEventNotificationCriteria eventNotificationCriteria;
+    eventNotificationCriteria.notificationEventType.assign().push_back(xsd::m2m::NotificationEventType::Create_of_Direct_Child_Resource);
+    //eventNotificationCriteria.notificationEventType.push_back(xsd::m2m::NotificationEventType::Delete_of_Direct_Child_Resource);
     subscription.eventNotificationCriteria = std::move(eventNotificationCriteria);
 
-    m2m::Request request = appEntity.newRequest(m2m::Operation::Create, m2m::To{"./metersvc/reads"});
-    request.req->resultContent = m2m::ResultContent::Nothing;
-    request.req->resourceType = m2m::ResourceType::subscription;
+    m2m::Request request = appEntity.newRequest(xsd::m2m::Operation::Create, m2m::To{"./metersvc/reads"});
+    request.req->resultContent = xsd::m2m::ResultContent::Nothing;
+    request.req->resourceType = xsd::m2m::ResourceType::subscription;
     request.req->marshallPC(subscription);
 
     appEntity.sendRequest(request);
@@ -150,34 +150,34 @@ bool create_subscription()
 
     logInfo("subscription: " << toString(response->responseStatusCode));
 
-    return (response->responseStatusCode == m2m::ResponseStatusCode::CREATED || response->responseStatusCode == m2m::ResponseStatusCode::CONFLICT);
+    return (response->responseStatusCode == xsd::m2m::ResponseStatusCode::CREATED || response->responseStatusCode == xsd::m2m::ResponseStatusCode::CONFLICT);
 }
 
 bool create_meter_read_policy()
 {
-    aos::CdtScheduleInterval scheduleInterval;
+    xsd::aos::CdtScheduleInterval scheduleInterval;
     scheduleInterval.end = nullptr;
     scheduleInterval.start = "2020-06-19T00:00:00";
 
-    aos::CdtTimeSchedule timeSchedule;
+    xsd::aos::CdtTimeSchedule timeSchedule;
     timeSchedule.recurrencePeriod = 120;
     timeSchedule.scheduleInterval = std::move(scheduleInterval);
 
-    aos::CdtMeterReadSchedule meterReadSchedule;
+    xsd::aos::CdtMeterReadSchedule meterReadSchedule;
     meterReadSchedule.readingType = "powerQuality";
     meterReadSchedule.timeSchedule = std::move(timeSchedule);
 
-    aos::CdtMeterServicePolicy meterServicePolicy;
+    xsd::aos::CdtMeterServicePolicy meterServicePolicy;
     meterServicePolicy.meterReadSchedule = std::move(meterReadSchedule);
 
-    m2m::CdtContentInstance policyInst = m2m::CdtContentInstance::Create();
+    xsd::m2m::CdtContentInstance policyInst = xsd::m2m::CdtContentInstance::Create();
     policyInst.content = xs::toAnyType(meterServicePolicy);
 
     policyInst.resourceName = "metersvc-sampl-pol-01";
 
-    m2m::Request request = appEntity.newRequest(m2m::Operation::Create, m2m::To{"./metersvc/policies"});
-    request.req->resultContent = m2m::ResultContent::Nothing;
-    request.req->resourceType = m2m::ResourceType::contentInstance;
+    m2m::Request request = appEntity.newRequest(xsd::m2m::Operation::Create, m2m::To{"./metersvc/policies"});
+    request.req->resultContent = xsd::m2m::ResultContent::Nothing;
+    request.req->resourceType = xsd::m2m::ResourceType::contentInstance;
     request.req->marshallPC(policyInst);
 
     appEntity.sendRequest(request);
@@ -185,12 +185,12 @@ bool create_meter_read_policy()
 
     logInfo("policy creation: " << toString(response->responseStatusCode));
 
-    return (response->responseStatusCode == m2m::ResponseStatusCode::CREATED || response->responseStatusCode == m2m::ResponseStatusCode::CONFLICT);
+    return (response->responseStatusCode == xsd::m2m::ResponseStatusCode::CREATED || response->responseStatusCode == xsd::m2m::ResponseStatusCode::CONFLICT);
 }
 
 void notificationCallback(m2m::Notification notification)
 {
-    if (!notification.notificationEvent)
+    if (!notification.notificationEvent.isSet())
     {
         logWarn("notification has no notificationEvent");
         return;
@@ -198,23 +198,23 @@ void notificationCallback(m2m::Notification notification)
 
     logDebug("got notification type " << toString(notification.notificationEvent->notificationEventType));
 
-    if (notification.notificationEvent->notificationEventType != m2m::NotificationEventType::Create_of_Direct_Child_Resource)
+    if (notification.notificationEvent->notificationEventType != xsd::m2m::NotificationEventType::Create_of_Direct_Child_Resource)
     {
         return;
     }
 
-    auto contentInstance = xs::fromAnyType<m2m::CdtContentInstance>(*notification.notificationEvent->representation);
-    auto meterSvcData = xs::fromAnyTypeElement<aos::CdtMeterSvcData>(*contentInstance.content, aos::sn_meterSvcData);
+    auto contentInstance = xs::fromAnyType<xsd::m2m::CdtContentInstance>(*notification.notificationEvent->representation);
+    auto meterSvcData = xs::fromAnyTypeElement<xsd::aos::CdtMeterSvcData>(*contentInstance.content, xsd::aos::sn_meterSvcData);
 
     std::ofstream output("meter_data.txt");
     logInfo("timestamp: " << meterSvcData.readTimeLocal);
     output << "timestamp: " << meterSvcData.readTimeLocal << '\n';
-    if (meterSvcData.powerQuality)
+    if (meterSvcData.powerQuality.isSet())
     {
         logInfo("powerQuality: " << *meterSvcData.powerQuality);
         output << "powerQuality:\n" << *meterSvcData.powerQuality << '\n';
     }
-    if (meterSvcData.summations)
+    if (meterSvcData.summations.isSet())
     {
         logInfo("summations: " << *meterSvcData.summations);
         output << "summations:\n" << *meterSvcData.summations << '\n';
