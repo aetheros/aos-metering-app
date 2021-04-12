@@ -2,16 +2,16 @@
 #include <aos/AppMain.hpp>
 #include <aos/Log.hpp>
 #include <m2m/AppEntity.hpp>
-#include <xsd/m2m/CdtSubscription.hpp>
-#include <xsd/m2m/CdtContentInstance.hpp>
 #include <m2m/RequestPrimitive.hpp>
 #include <m2m/ResponsePrimitive.hpp>
+#include <xsd/m2m/CdtSubscription.hpp>
+#include <xsd/m2m/CdtContentInstance.hpp>
 #include <xsd/m2m/Names.hpp>
 #include <xsd/aos/CdtMeterReadSchedulePolicy.hpp>
 #include <xsd/aos/Names.hpp>
 #include <thread>
-#include <unistd.h>
 #include <fstream>
+#include <cstdio>
 
 using std::chrono::seconds;
 using std::chrono::minutes;
@@ -203,8 +203,9 @@ void notificationCallback(m2m::Notification notification)
         return;
     }
 
-    auto contentInstance = xs::fromAnyType<xsd::m2m::CdtContentInstance>(*notification.notificationEvent->representation);
-    auto meterSvcData = xs::fromAnyTypeElement<xsd::aos::CdtMeterSvcData>(*contentInstance.content, xsd::aos::sn_meterSvcData);
+    auto contentInstance = notification.notificationEvent->representation->extractNamed<xsd::m2m::CdtContentInstance>();
+    auto meterRead = contentInstance.content->extractUnnamed<xsd::aos::CdtMeterRead>();
+    auto &meterSvcData = *meterRead.meterSvcData;
 
     std::ofstream output("meter_data.txt");
     logInfo("timestamp: " << meterSvcData.readTimeLocal);
