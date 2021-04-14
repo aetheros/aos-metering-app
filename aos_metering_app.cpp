@@ -171,7 +171,7 @@ bool create_meter_read_policy()
     meterServicePolicy.meterReadSchedule = std::move(meterReadSchedule);
 
     xsd::m2m::CdtContentInstance policyInst = xsd::m2m::CdtContentInstance::Create();
-    policyInst.content = xs::toAnyType(meterServicePolicy);
+    policyInst.content = xsd::toAnyTypeUnnamed(meterServicePolicy);
 
     policyInst.resourceName = "metersvc-sampl-pol-01";
 
