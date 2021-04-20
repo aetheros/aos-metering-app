@@ -2,8 +2,6 @@
 #include <aos/AppMain.hpp>
 #include <aos/Log.hpp>
 #include <m2m/AppEntity.hpp>
-#include <m2m/RequestPrimitive.hpp>
-#include <m2m/ResponsePrimitive.hpp>
 #include <xsd/m2m/CdtSubscription.hpp>
 #include <xsd/m2m/CdtContentInstance.hpp>
 #include <xsd/m2m/Names.hpp>
@@ -143,7 +141,7 @@ bool create_subscription()
     m2m::Request request = appEntity.newRequest(xsd::m2m::Operation::Create, m2m::To{"./metersvc/reads"});
     request.req->resultContent = xsd::m2m::ResultContent::Nothing;
     request.req->resourceType = xsd::m2m::ResourceType::subscription;
-    request.req->marshallPC(subscription);
+    request.req->primitiveContent = xsd::toAnyNamed(subscription);
 
     appEntity.sendRequest(request);
     auto response = appEntity.getResponse(request);
@@ -178,7 +176,7 @@ bool create_meter_read_policy()
     m2m::Request request = appEntity.newRequest(xsd::m2m::Operation::Create, m2m::To{"./metersvc/policies"});
     request.req->resultContent = xsd::m2m::ResultContent::Nothing;
     request.req->resourceType = xsd::m2m::ResourceType::contentInstance;
-    request.req->marshallPC(policyInst);
+    request.req->primitiveContent = xsd::toAnyNamed(policyInst);
 
     appEntity.sendRequest(request);
     auto response = appEntity.getResponse(request);

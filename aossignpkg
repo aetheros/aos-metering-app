@@ -1,0 +1,6 @@
+#!/bin/sh
+
+. ./aos.sh
+
+aossignpkg "$@"
+
