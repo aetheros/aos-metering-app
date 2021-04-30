@@ -2,7 +2,7 @@
 -include config.mk
 
 CXXFLAGS += -MMD -MP -Ilib
-LIBS += -lsdk_m2m -lsdk_aos -laosgen -lm2mgen -lxsd -lcoap -ldtls -lcommon -lappfw
+LIBS += -lsdk_m2m -lsdk_aos -lm2mgen -lxsd_mtrsvc -lxsd -lcoap -ldtls -lcommon -lappfw
 
 EXE = aos_metering_app
 

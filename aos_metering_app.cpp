@@ -5,8 +5,8 @@
 #include <xsd/m2m/CdtSubscription.hpp>
 #include <xsd/m2m/CdtContentInstance.hpp>
 #include <xsd/m2m/Names.hpp>
-#include <xsd/aos/CdtMeterReadSchedulePolicy.hpp>
-#include <xsd/aos/Names.hpp>
+#include <xsd/mtrsvc/MeterReadSchedulePolicy.hpp>
+#include <xsd/mtrsvc/Names.hpp>
 #include <thread>
 #include <fstream>
 #include <cstdio>
@@ -14,7 +14,7 @@
 using std::chrono::seconds;
 using std::chrono::minutes;
 
-m2m::AppEntity appEntity;
+m2m::AppEntity appEntity; // OneM2M Application Entity (AE) object
 
 void notificationCallback(m2m::Notification notification);
 bool create_subscription();
@@ -153,19 +153,19 @@ bool create_subscription()
 
 bool create_meter_read_policy()
 {
-    xsd::aos::CdtScheduleInterval scheduleInterval;
+    xsd::mtrsvc::ScheduleInterval scheduleInterval;
     scheduleInterval.end = nullptr;
     scheduleInterval.start = "2020-06-19T00:00:00";
 
-    xsd::aos::CdtTimeSchedule timeSchedule;
+    xsd::mtrsvc::TimeSchedule timeSchedule;
     timeSchedule.recurrencePeriod = 120;
     timeSchedule.scheduleInterval = std::move(scheduleInterval);
 
-    xsd::aos::CdtMeterReadSchedule meterReadSchedule;
+    xsd::mtrsvc::MeterReadSchedule meterReadSchedule;
     meterReadSchedule.readingType = "powerQuality";
     meterReadSchedule.timeSchedule = std::move(timeSchedule);
 
-    xsd::aos::CdtMeterServicePolicy meterServicePolicy;
+    xsd::mtrsvc::MeterServicePolicy meterServicePolicy;
     meterServicePolicy.meterReadSchedule = std::move(meterReadSchedule);
 
     xsd::m2m::CdtContentInstance policyInst = xsd::m2m::CdtContentInstance::Create();
@@ -202,7 +202,7 @@ void notificationCallback(m2m::Notification notification)
     }
 
     auto contentInstance = notification.notificationEvent->representation->extractNamed<xsd::m2m::CdtContentInstance>();
-    auto meterRead = contentInstance.content->extractUnnamed<xsd::aos::CdtMeterRead>();
+    auto meterRead = contentInstance.content->extractUnnamed<xsd::mtrsvc::MeterRead>();
     auto &meterSvcData = *meterRead.meterSvcData;
 
     std::ofstream output("meter_data.txt");
