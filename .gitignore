@@ -6,3 +6,4 @@ config.mk
 aos_metering_app
 app_config.json
 *.aos
+*.pem

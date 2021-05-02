@@ -2,8 +2,8 @@
 #include <aos/AppMain.hpp>
 #include <aos/Log.hpp>
 #include <m2m/AppEntity.hpp>
-#include <xsd/m2m/CdtSubscription.hpp>
-#include <xsd/m2m/CdtContentInstance.hpp>
+#include <xsd/m2m/Subscription.hpp>
+#include <xsd/m2m/ContentInstance.hpp>
 #include <xsd/m2m/Names.hpp>
 #include <xsd/mtrsvc/MeterReadSchedulePolicy.hpp>
 #include <xsd/mtrsvc/Names.hpp>
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 
 bool create_subscription()
 {
-    xsd::m2m::CdtSubscription subscription = xsd::m2m::CdtSubscription::Create();
+    xsd::m2m::Subscription subscription = xsd::m2m::Subscription::Create();
 
     subscription.creator = std::string();
 
@@ -129,11 +129,11 @@ bool create_subscription()
     subscription.notificationContentType = xsd::m2m::NotificationContentType::all_attributes;
 
     // set the notification destination to be this AE.
-    subscription.notificationURI = xsd::m2m::CdtListOfURIs();
+    subscription.notificationURI = xsd::m2m::ListOfURIs();
     subscription.notificationURI->push_back(appEntity.getResourceId());
 
     // set eventNotificationCriteria to creation and deletion of child resources
-    xsd::m2m::CdtEventNotificationCriteria eventNotificationCriteria;
+    xsd::m2m::EventNotificationCriteria eventNotificationCriteria;
     eventNotificationCriteria.notificationEventType.assign().push_back(xsd::m2m::NotificationEventType::Create_of_Direct_Child_Resource);
     //eventNotificationCriteria.notificationEventType.push_back(xsd::m2m::NotificationEventType::Delete_of_Direct_Child_Resource);
     subscription.eventNotificationCriteria = std::move(eventNotificationCriteria);
@@ -168,7 +168,7 @@ bool create_meter_read_policy()
     xsd::mtrsvc::MeterServicePolicy meterServicePolicy;
     meterServicePolicy.meterReadSchedule = std::move(meterReadSchedule);
 
-    xsd::m2m::CdtContentInstance policyInst = xsd::m2m::CdtContentInstance::Create();
+    xsd::m2m::ContentInstance policyInst = xsd::m2m::ContentInstance::Create();
     policyInst.content = xsd::toAnyTypeUnnamed(meterServicePolicy);
 
     policyInst.resourceName = "metersvc-sampl-pol-01";
@@ -201,7 +201,7 @@ void notificationCallback(m2m::Notification notification)
         return;
     }
 
-    auto contentInstance = notification.notificationEvent->representation->extractNamed<xsd::m2m::CdtContentInstance>();
+    auto contentInstance = notification.notificationEvent->representation->extractNamed<xsd::m2m::ContentInstance>();
     auto meterRead = contentInstance.content->extractUnnamed<xsd::mtrsvc::MeterRead>();
     auto &meterSvcData = *meterRead.meterSvcData;
 
