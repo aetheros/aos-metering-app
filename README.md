@@ -77,3 +77,99 @@ Connect a device to your host via USB.  Make sure you have the `adb` command ins
 Use the **aosapp** command to install and activate the app.  Run `./aosapp install` to install the app on the connected device.  Use the `-s <serialno>` option if there are multiple devices connected. If the application installs successfully, it can then be activated with `./aosapp activate`.
 
 Run `./aosapp -h` to see the list of options.
+
+## Common commands ##
+
+### Starting and stopping the app ###
+
+Use **aosapp** to control whether the app is activated on the device, meaning it will run automatically.
+
+- `./aosapp activate` - Enable the app so it is always running.
+- `./aosapp deactivate` - Disable the app so it does not run.
+
+To simply stop, start, or restart an app, use **prctl** from a device shell.
+
+- `prctl stop <appname>` - Stop the app
+- `prctl start <appname>` - Start the app
+- `prctl restart <appname>` - Restart the app
+- `prctl status <appname>` - Check the status of the app
+
+```sh
+/ $ prctl stop aos_metering_app
+aos_metering_app   stopping     [ok]
+/ $
+/ $ prctl start aos_metering_app
+aos_metering_app   running      [ok] (last killed by signal: 9)
+/ $
+/ $ prctl restart aos_metering_app
+aos_metering_app   want-running [ok] (last killed by signal: 9)
+/ $
+/ $ prctl status aos_metering_app
+aos_metering_app   running      [ok] (last killed by signal: 9)
+```
+
+When stopping the app, if it does not exit in response to a SIGTERM sent by the supervisor process, it will be terminated after a few seconds with SIGKILL (9).  **prctl** reports this fact in the status as "(last killed by signal: 9)".
+
+### Updating the app ###
+
+Until further notice, the app can only be updated by first uninstalling it, and then installing the new version.
+
+```sh
+./aosapp uninstall
+./aosapp install
+./aosapp activate
+```
+
+### Accessing a device shell ###
+
+Use the **adb** command to access a device.  Running `adb shell` will drop you into a shell as the **apps** user.  Common linux commands can be run from this shell.
+
+If multiple devices are attached, use the `-s` option to select a device by its serial number.  `adb devices` will list all the connected devices.
+
+If you specify a command and arguments after `adb shell`, adb will run that command in a shell.
+ 
+Example:
+```sh
+$ adb shell cat /etc/issue
+aos esr1k-lgausmeter 6.0.6g 6.0.6-R-20210506:061638-g55dc5d7
+$
+```
+
+### Reading the log ###
+
+From a device shell, use the **logread** command to read the system log.  Use **grep** for filtering.
+
+Example:
+```sh
+$ adb shell logread |grep aos_metering |tail -n 10
+May 13 19:56:31 aos daemon.notice aos_metering_app-sv: containerizing /data/polnet/apps/aos_metering_app/aos_metering_app
+May 13 19:56:31 aos daemon.notice aos_metering_app-sv: chdir("/home/apps")
+May 13 19:56:31 aos daemon.notice aos_metering_app-sv: forking /data/polnet/apps/aos_metering_app/aos_metering_app
+May 14 02:56:32 aos user.warn aos_metering_ap: [1] m2m.AppEntity.Impl_.initialize (163) - app_config.json does not exist
+May 14 02:56:32 aos user.info aos_metering_ap: [1] main (83) - activating
+May 14 02:56:32 aos user.info aos_metering_ap: [1] m2m.AppEntity.Impl_.startRegistration (369) - AE registration request
+May 14 02:56:32 aos user.info aos_metering_ap: [3] m2m.AppEntity.Impl_.handleRegisterAEResponse (451) - AE Registration complete.  AE-ID = Cmetersvc-smpl
+May 14 02:56:32 aos user.info aos_metering_ap: [1] main (98) - activated
+May 14 02:56:32 aos user.info aos_metering_ap: [1] create_subscription (149) - subscription: CREATED
+May 14 02:56:32 aos user.info aos_metering_ap: [1] create_meter_read_policy (184) - policy creation: CREATED
+$
+```
+
+### Accessing the application environment. ###
+
+Running `./aosapp shell` will open a shell in an environment identically to the one the application runs in.
+
+Example:
+```sh
+ ./aosapp -s 87e76c0 shell
+/home/apps # ls -l
+ls -l
+-rwxr-xr-x    1 aos      root        193456 May 14 03:15 aos_metering_app
+-rw-r-----    1 root     root           165 May 14 03:16 app_config.json
+-rw-r--r--    1 aos      root           146 May 14 03:15 env
+-rw-r--r--    1 aos      root           291 May 14 03:15 manifest.json
+-rw-r-----    1 root     root           343 May 14 03:24 meter_data.txt
+-rw-r--r--    1 aos      root           138 May 14 03:15 service.conf
+/home/apps # 
+```
+
