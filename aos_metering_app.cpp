@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     }
 
     // initialize the AE object
-    appEntity = m2m::AppEntity("app_config.json", notificationCallback);
+    appEntity = m2m::AppEntity(notificationCallback);
 
     if (argc-optind == 1)
     {
