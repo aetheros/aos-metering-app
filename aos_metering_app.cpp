@@ -1,4 +1,5 @@
 // vim: sw=4 expandtab
+// Copyright (c) Aetheros, Inc.  See COPYRIGHT
 #include <aos/AppMain.hpp>
 #include <aos/Log.hpp>
 #include <m2m/AppEntity.hpp>
