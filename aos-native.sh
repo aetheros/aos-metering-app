@@ -2,7 +2,7 @@
 AOS_NATIVE_CONFIGURED=0
 if [ -z "${AOS_NATIVE_OUTPUT_DIR}" ]; then
 	echo "AOS_NATIVE_OUTPUT_DIR is not defined"
-else if [ ! -d "${AOS_NATIVE_OUTPUT_DIR}" ]; then
+elif [ ! -d "${AOS_NATIVE_OUTPUT_DIR}" ]; then
 	echo "AOS_NATIVE_OUTPUT_DIR ${AOS_NATIVE_OUTPUT_DIR} does not exist"
 else
 	AOS_NATIVE_CONFIGURED=1
