@@ -1,6 +1,6 @@
 {
 	"name": "aos_metering_app",
-	"version": "1.2",
+	"version": "1.3",
 	"exe-name": "aos_metering_app",
 	"m2m": {
 		"app-name": "metersvc-smpl",

@@ -19,7 +19,8 @@ m2m::AppEntity appEntity; // OneM2M Application Entity (AE) object
 
 void notificationCallback(m2m::Notification notification);
 bool create_subscription();
-bool create_meter_read_policy();
+bool create_meter_read_pq_policy();
+bool create_meter_read_summations_policy();
 
 [[noreturn]] void usage(const char *prog)
 {
@@ -104,9 +105,16 @@ int main(int argc, char *argv[])
             continue;
         }
 
-        if (!create_meter_read_policy())
+        if (!create_meter_read_pq_policy())
         {
-            logError("meter read policy creation failed");
+            logError("power-quality meter read policy creation failed");
+            std::this_thread::sleep_for(seconds{30});
+            continue;
+        }
+
+        if (!create_meter_read_summations_policy())
+        {
+            logError("summations meter read policy creation failed");
             std::this_thread::sleep_for(seconds{30});
             continue;
         }
@@ -152,18 +160,18 @@ bool create_subscription()
     return (response->responseStatusCode == xsd::m2m::ResponseStatusCode::CREATED || response->responseStatusCode == xsd::m2m::ResponseStatusCode::CONFLICT);
 }
 
-bool create_meter_read_policy()
+bool create_meter_read_policy(const char *readingType, unsigned recurrencePeriod, const std::string &polId)
 {
     xsd::mtrsvc::ScheduleInterval scheduleInterval;
     scheduleInterval.end = nullptr;
     scheduleInterval.start = "2020-06-19T00:00:00";
 
     xsd::mtrsvc::TimeSchedule timeSchedule;
-    timeSchedule.recurrencePeriod = 120;
+    timeSchedule.recurrencePeriod = recurrencePeriod;
     timeSchedule.scheduleInterval = std::move(scheduleInterval);
 
     xsd::mtrsvc::MeterReadSchedule meterReadSchedule;
-    meterReadSchedule.readingType = "powerQuality";
+    meterReadSchedule.readingType = readingType;
     meterReadSchedule.timeSchedule = std::move(timeSchedule);
 
     xsd::mtrsvc::MeterServicePolicy meterServicePolicy;
@@ -172,7 +180,7 @@ bool create_meter_read_policy()
     xsd::m2m::ContentInstance policyInst = xsd::m2m::ContentInstance::Create();
     policyInst.content = xsd::toAnyTypeUnnamed(meterServicePolicy);
 
-    policyInst.resourceName = "metersvc-sampl-pol-01";
+    policyInst.resourceName = "metersvc-sampl-pol-" + polId;
 
     m2m::Request request = appEntity.newRequest(xsd::m2m::Operation::Create, m2m::To{"./metersvc/policies"});
     request.req->resultContent = xsd::m2m::ResultContent::Nothing;
@@ -182,9 +190,19 @@ bool create_meter_read_policy()
     appEntity.sendRequest(request);
     auto response = appEntity.getResponse(request);
 
-    logInfo("policy creation: " << toString(response->responseStatusCode));
+    logInfo(readingType << " policy creation: " << toString(response->responseStatusCode));
 
     return (response->responseStatusCode == xsd::m2m::ResponseStatusCode::CREATED || response->responseStatusCode == xsd::m2m::ResponseStatusCode::CONFLICT);
+}
+
+bool create_meter_read_pq_policy()
+{
+    return create_meter_read_policy("powerQuality", 120, "01");
+}
+
+bool create_meter_read_summations_policy()
+{
+    return create_meter_read_policy("summations", 240, "02");
 }
 
 void notificationCallback(m2m::Notification notification)
@@ -206,17 +224,19 @@ void notificationCallback(m2m::Notification notification)
     auto meterRead = contentInstance.content->extractUnnamed<xsd::mtrsvc::MeterRead>();
     auto &meterSvcData = *meterRead.meterSvcData;
 
-    std::ofstream output("meter_data.txt");
     logInfo("timestamp: " << meterSvcData.readTimeLocal);
-    output << "timestamp: " << meterSvcData.readTimeLocal << '\n';
     if (meterSvcData.powerQuality.isSet())
     {
+        std::ofstream output("powerquality_meter_data.txt");
         logInfo("powerQuality: " << *meterSvcData.powerQuality);
+        output << "timestamp: " << meterSvcData.readTimeLocal << '\n';
         output << "powerQuality:\n" << *meterSvcData.powerQuality << '\n';
     }
     if (meterSvcData.summations.isSet())
     {
+        std::ofstream output("summation_meter_data.txt");
         logInfo("summations: " << *meterSvcData.summations);
+        output << "timestamp: " << meterSvcData.readTimeLocal << '\n';
         output << "summations:\n" << *meterSvcData.summations << '\n';
     }
 }
