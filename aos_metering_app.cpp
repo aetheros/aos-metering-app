@@ -6,7 +6,8 @@
 #include <xsd/m2m/Subscription.hpp>
 #include <xsd/m2m/ContentInstance.hpp>
 #include <xsd/m2m/Names.hpp>
-#include <xsd/mtrsvc/MeterReadSchedulePolicy.hpp>
+#include <xsd/mtrsvc/MeterServicePolicy.hpp>
+#include <xsd/mtrsvc/MeterRead.hpp>
 #include <xsd/mtrsvc/Names.hpp>
 #include <thread>
 #include <fstream>
@@ -175,7 +176,7 @@ bool create_meter_read_policy(const char *readingType, unsigned recurrencePeriod
     meterReadSchedule.timeSchedule = std::move(timeSchedule);
 
     xsd::mtrsvc::MeterServicePolicy meterServicePolicy;
-    meterServicePolicy.meterReadSchedule = std::move(meterReadSchedule);
+    meterServicePolicy = std::move(meterReadSchedule);
 
     xsd::m2m::ContentInstance policyInst = xsd::m2m::ContentInstance::Create();
     policyInst.content = xsd::toAnyTypeUnnamed(meterServicePolicy);
@@ -240,4 +241,3 @@ void notificationCallback(m2m::Notification notification)
         output << "summations:\n" << *meterSvcData.summations << '\n';
     }
 }
-
