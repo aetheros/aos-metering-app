@@ -2,8 +2,14 @@
 *.d
 *.swp
 *.swo
+*.swn
 config.mk
 aos_metering_app
 app_config.json
 *.aos
 *.pem
+*.pyc
+credential-id
+app.icon
+*.tbz2
+*.tgz
