@@ -1,6 +1,0 @@
-#!/bin/bash
-
-. ./aos.sh
-
-aospkg "$@"
-
