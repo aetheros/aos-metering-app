@@ -10,6 +10,5 @@ app_config.json
 *.pem
 *.pyc
 credential-id
-app.icon
 *.tbz2
 *.tgz
